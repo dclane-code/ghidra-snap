@@ -1,0 +1,40 @@
+name: ghidra
+version: 10.2.3
+summary: Ghidra SRE tools
+description: 'A software reverse engineering (SRE) suite of tools developed by NSA''s
+  Research Directorate in support of the Cybersecurity mission |
+  '
+
+base: core20
+confinement: strict
+grade: devel
+
+apps:
+  ghidra:
+    command: ghidra_10.2.3_PUBLIC/ghidraRun
+    environment:
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-amd64
+      PATH: $JAVA_HOME/bin:$PATH
+    plugs:
+    - desktop
+    - home
+    - dot-ghidra
+    - network-bind
+    - x11
+
+parts:
+  ghidra-dcl:
+    plugin: dump
+    #source: http://192.168.1.195/ghidra_10.2.3_PUBLIC_20230208.zip   #save banddwith for local testing
+    source: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_10.2.3_build/ghidra_10.2.3_PUBLIC_20230208.zip
+    stage-packages:
+    - openjdk-17-jdk
+    - openjdk-17-jre
+
+
+plugs:
+  dot-ghidra:
+    interface: personal-files
+    write:
+    - $HOME/.ghidra
+    - $HOME/.cache/JNA
