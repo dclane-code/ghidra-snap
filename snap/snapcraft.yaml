@@ -35,6 +35,11 @@ parts:
     - openjdk-17-jdk
     - ca-certificates-java
     - ca-certificates
+    stage-packages:
+    - openjdk-17-jre
+    - openjdk-17-jdk
+    - ca-certificates-java
+    - ca-certificates
 
 
 plugs:
