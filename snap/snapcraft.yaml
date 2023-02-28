@@ -22,7 +22,7 @@ apps:
     - desktop
     - home
     - dot-ghidra
-    - dot-cache
+    - dot-cache-jna
     - network-bind
     - x11
 
@@ -47,7 +47,7 @@ plugs:
     interface: personal-files
     write:
     - $HOME/.ghidra
-  dot-cache:
+  dot-cache-jna:
     interface: personal-files
     write:
-    - $HOME/.cache
+    - $HOME/.cache/JNA
