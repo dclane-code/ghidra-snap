@@ -22,13 +22,13 @@ apps:
     - desktop
     - home
     - dot-ghidra
+    - dot-cache
     - network-bind
     - x11
 
 parts:
   ghidra:
     plugin: dump
-    #source: http://192.168.1.195/ghidra_10.2.3_PUBLIC_20230208.zip   #save banddwith for local testing
     source: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_10.2.3_build/ghidra_10.2.3_PUBLIC_20230208.zip
     build-packages:
     - openjdk-17-jre

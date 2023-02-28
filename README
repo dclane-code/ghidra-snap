@@ -1,0 +1,5 @@
+This is an un-official snap of ghidra from https://ghidra-sre.org/
+
+Not all ghidra functionality has been fully tested under strict confinement
+
+Contributions welcome
