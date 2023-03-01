@@ -18,7 +18,7 @@ apps:
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-amd64
       PATH: $JAVA_HOME/bin:$PATH
-      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
+      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA"
     plugs:
     - desktop
     - home
