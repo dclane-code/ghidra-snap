@@ -18,11 +18,10 @@ apps:
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-amd64
       PATH: $JAVA_HOME/bin:$PATH
+      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON"
     plugs:
     - desktop
     - home
-    - dot-ghidra
-    - dot-cache-jna
     - network-bind
     - x11
 
@@ -42,12 +41,3 @@ parts:
     - ca-certificates
 
 
-plugs:
-  dot-ghidra:
-    interface: personal-files
-    write:
-    - $HOME/.ghidra
-  dot-cache-jna:
-    interface: personal-files
-    write:
-    - $HOME/.cache/JNA
