@@ -39,5 +39,6 @@ parts:
     - openjdk-17-jdk
     - ca-certificates-java
     - ca-certificates
-
+    prime:
+      - -usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs
 
