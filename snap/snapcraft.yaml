@@ -8,6 +8,7 @@ description: 'A software reverse engineering (SRE) suite of tools developed by N
 base: core20
 confinement: strict
 grade: stable
+license: Apache-2.0
 
 architectures:
   - amd64
