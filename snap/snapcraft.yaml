@@ -26,6 +26,18 @@ apps:
     - network-bind
     - x11
 
+  analyzeHeadless:
+    command: ghidra_10.3_PUBLIC/support/analyzeHeadless
+    environment:
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-amd64
+      PATH: $JAVA_HOME/bin:$PATH
+      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA"
+    plugs:
+    - desktop
+    - home
+    - network-bind
+    - x11       # still required even for headless operation
+
 parts:
   ghidra:
     plugin: dump
