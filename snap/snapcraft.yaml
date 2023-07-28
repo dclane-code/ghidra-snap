@@ -54,4 +54,14 @@ parts:
     - ca-certificates
     prime:
       - -usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs
-
+  generate-launcher-icon:
+    plugin: nil
+    after:
+      - ghidra
+    build-packages:
+      - imagemagick
+    override-stage: |
+      snapcraftctl stage
+      convert ghidra_10.3_PUBLIC/support/ghidra.ico -alpha on -background none -thumbnail 256x256 -flatten ghidra_10.3_PUBLIC/support/ghidra.png
+    prime:
+      - ghidra_10.3_PUBLIC/support/ghidra.png

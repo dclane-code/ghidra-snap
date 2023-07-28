@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Ghidra
+Exec=ghidra
+Icon=${SNAP}/ghidra_10.3_PUBLIC/support/ghidra.png
+Type=Application
