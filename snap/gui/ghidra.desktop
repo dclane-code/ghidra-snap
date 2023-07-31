@@ -1,5 +1,5 @@
 [Desktop Entry]
 Name=Ghidra
 Exec=ghidra
-Icon=${SNAP}/ghidra_10.3_PUBLIC/support/ghidra.png
+Icon=${SNAP}/meta/gui/ghidra.png
 Type=Application
