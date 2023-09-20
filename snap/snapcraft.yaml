@@ -5,19 +5,20 @@ description: 'A software reverse engineering (SRE) suite of tools developed by N
   Research Directorate in support of the Cybersecurity mission |
   '
 
-base: core20
+base: core22
 confinement: strict
 grade: stable
 license: Apache-2.0
 
 architectures:
   - amd64
+  - arm64
 
 apps:
   ghidra:
     command: ghidra_10.3.3_PUBLIC/ghidraRun
     environment:
-      JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-amd64
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
       _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA"
     plugs:
@@ -29,7 +30,7 @@ apps:
   analyzeHeadless:
     command: ghidra_10.3.3_PUBLIC/support/analyzeHeadless
     environment:
-      JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-amd64
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
       _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA"
     plugs:
@@ -53,5 +54,5 @@ parts:
     - ca-certificates-java
     - ca-certificates
     prime:
-      - -usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs
+      - -usr/lib/jvm/java-11-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/blacklisted.certs
 
