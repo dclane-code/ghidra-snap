@@ -70,6 +70,8 @@ parts:
     override-build: |
       craftctl default
 
+      sed -i s/application.release.name=DEV/application.release.name=PUBLIC/ Ghidra/application.properties
+
       gradle -I gradle/support/fetchDependencies.gradle
       gradle buildGhidra -PallPlatforms
 
