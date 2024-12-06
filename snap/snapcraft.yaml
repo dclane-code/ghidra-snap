@@ -1,28 +1,33 @@
 name: ghidra
-version: '11.1.1'
-summary: Ghidra SRE tools
-description: 'A software reverse engineering (SRE) suite of tools developed by NSA''s
-  Research Directorate in support of the Cybersecurity mission |
-  '
+title: ghidra
+summary: Ghidra SRE Tools
+description: |
+  A software reverse engineering (SRE) suite of tools developed by NSA's
+  Research Directorate in support of the Cybersecurity mission
+website: https://ghidra-sre.org/
+contact: https://github.com/NationalSecurityAgency/ghidra/issues
+issues: https://github.com/NationalSecurityAgency/ghidra/issues
+source-code: https://github.com/NationalSecurityAgency/ghidra
+license: Apache-2.0
+icon: snap/gui/ghidra.png
+adopt-info: ghidra
 
 base: core22
 confinement: strict
 grade: stable
-license: Apache-2.0
 
 architectures:
-  - build-on: [amd64]
-    build-for: [amd64]
-  - build-on: [arm64]
-    build-for: [arm64]
+  - build-on: amd64
+  - build-on: arm64
+  - build-on: armhf
 
 apps:
   ghidra:
-    command: ghidra_11.1.1_PUBLIC/ghidraRun
     environment:
-      JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-$SNAPCRAFT_TARGET_ARCH
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$CRAFT_ARCH_BUILD_FOR
       PATH: $JAVA_HOME/bin:$PATH
-      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA"
+      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON" -Djavax.net.ssl.trustStore=/snap/gradle/current/etc/ssl/certs/java/cacerts
+    command: ghidra/ghidraRun
     plugs:
     - desktop
     - home
@@ -30,31 +35,47 @@ apps:
     - x11
 
   analyzeHeadless:
-    command: ghidra_11.1.1_PUBLIC/support/analyzeHeadless
     environment:
-      JAVA_HOME: $SNAP/usr/lib/jvm/java-17-openjdk-$SNAPCRAFT_TARGET_ARCH
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$CRAFT_ARCH_BUILD_FOR
       PATH: $JAVA_HOME/bin:$PATH
-      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA"
+      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_COMMON" -Djavax.net.ssl.trustStore=/snap/gradle/current/etc/ssl/certs/java/cacerts
+    command: ghidra/support/analyzeHeadless
     plugs:
     - desktop
     - home
     - network-bind
-    - x11       # still required even for headless operation
+    - x11 # Still required even for headless operation
 
 parts:
   ghidra:
-    plugin: dump
-    source: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.1.1_build/ghidra_11.1.1_PUBLIC_20240614.zip
-    build-packages:
-    - openjdk-17-jre
-    - openjdk-17-jdk
-    - ca-certificates-java
-    - ca-certificates
+    plugin: nil
+    source: https://github.com/NationalSecurityAgency/ghidra.git
+    source-tag: stable
+    build-environment:
+      - _JAVA_OPTIONS: -Djavax.net.ssl.trustStore=/snap/gradle/current/etc/ssl/certs/java/cacerts
     stage-packages:
-    - openjdk-17-jre
-    - openjdk-17-jdk
-    - ca-certificates-java
-    - ca-certificates
-    prime:
-      - -usr/lib/jvm/java-11-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/blacklisted.certs
+      - openjdk-21-jdk
+      - ca-certificates-java
+    build-packages:
+      - unzip
+    build-snaps:
+      - gradle/latest/edge
+    override-pull: |
+      craftctl default
 
+      version_file=Ghidra/application.properties
+      version=$(sed -n "s/application.version=\(.*\)\+/\1/p" $version_file)
+
+      craftctl set version="$version"
+    override-build: |
+      craftctl default
+
+      sed -i s/application.release.name=DEV/application.release.name=PUBLIC/ Ghidra/application.properties
+
+      gradle -I gradle/support/fetchDependencies.gradle
+      gradle buildGhidra -PallPlatforms
+
+      unzip -d $CRAFT_PART_INSTALL build/dist/ghidra_*.zip
+      mv $CRAFT_PART_INSTALL/ghidra_* $CRAFT_PART_INSTALL/ghidra
+    prime:
+      - -usr/lib/jvm/java-21-openjdk-*/lib/security/blacklisted.certs
