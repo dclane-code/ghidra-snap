@@ -78,4 +78,8 @@ parts:
       unzip -d $CRAFT_PART_INSTALL build/dist/ghidra_*.zip
       mv $CRAFT_PART_INSTALL/ghidra_* $CRAFT_PART_INSTALL/ghidra
     prime:
-      - -usr/lib/jvm/java-21-openjdk-*/lib/security/blacklisted.certs
+      - -usr/lib/jvm/java-11-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/blacklisted.certs 
+      - -usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/blacklisted.certs
+      - -usr/lib/jvm/java-11-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/cacerts
+      - -usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/cacerts
+
