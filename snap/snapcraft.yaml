@@ -9,6 +9,7 @@ base: core22
 confinement: strict
 grade: stable
 license: Apache-2.0
+icon: snap/gui/ghidra.png
 
 architectures:
   - build-on: [amd64]
@@ -44,7 +45,7 @@ apps:
 parts:
   ghidra:
     plugin: dump
-    source: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.3.1_build/ghidra_11.3.1_PUBLIC_20240219.zip
+    source: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.3.1_build/ghidra_11.3.1_PUBLIC_20250219.zip
     build-packages:
     - openjdk-21-jdk
     - ca-certificates-java
