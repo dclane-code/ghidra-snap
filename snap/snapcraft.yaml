@@ -1,5 +1,5 @@
 name: ghidra
-version: '11.3.1'
+version: '11.4'
 summary: Ghidra SRE tools
 description: 'A software reverse engineering (SRE) suite of tools developed by NSA''s
   Research Directorate in support of the Cybersecurity mission |
@@ -19,7 +19,7 @@ architectures:
 
 apps:
   ghidra:
-    command: ghidra_11.3.1_PUBLIC/ghidraRun
+    command: ghidra_11.4_PUBLIC/ghidraRun
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
@@ -31,7 +31,7 @@ apps:
     - x11
 
   analyzeHeadless:
-    command: ghidra_11.3.1_PUBLIC/support/analyzeHeadless
+    command: ghidra_11.4_PUBLIC/support/analyzeHeadless
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
@@ -45,7 +45,7 @@ apps:
 parts:
   ghidra:
     plugin: dump
-    source: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.3.1_build/ghidra_11.3.1_PUBLIC_20250219.zip
+    source: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.4_build/ghidra_11.4_PUBLIC_20250620.zip
     build-packages:
     - openjdk-21-jdk
     - ca-certificates-java
