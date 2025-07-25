@@ -29,6 +29,7 @@ apps:
     - home
     - network-bind
     - x11
+    - removable-media
 
   analyzeHeadless:
     command: ghidra_11.4_PUBLIC/support/analyzeHeadless
@@ -41,6 +42,7 @@ apps:
     - home
     - network-bind
     - x11       # still required even for headless operation
+    - removable-media
 
 parts:
   ghidra:
