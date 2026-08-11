@@ -32,7 +32,7 @@ apps:
   no-python:
     command: ghidra/ghidraRun
     command-chain:
-     - snap/command-chain/launcher.sh
+     - command-chain/launcher.sh
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
@@ -49,7 +49,7 @@ apps:
   analyzeHeadless:
     command: ghidra/support/analyzeHeadless
     command-chain:
-     - snap/command-chain/launcher.sh
+     - command-chain/launcher.sh
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
@@ -65,7 +65,7 @@ apps:
   ghidra:
     command: ghidra/support/pyghidraRun
     command-chain:
-     - snap/command-chain/launcher.sh
+     - command-chain/launcher.sh
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
@@ -97,6 +97,13 @@ parts:
       - -usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/blacklisted.certs
       - -usr/lib/jvm/java-11-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/cacerts
       - -usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/cacerts
+
+  cmd-chain:
+    after: [pyghidra]
+    plugin: dump
+    source: .
+    organize:
+     launcher.py: command-chain/launcher.py
 
   pyghidra:
     after: [ghidra]
