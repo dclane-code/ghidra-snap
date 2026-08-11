@@ -3,6 +3,8 @@ version: '12.1.2'
 summary: Ghidra SRE tools
 description: 'A software reverse engineering (SRE) suite of tools developed by NSA''s
   Research Directorate in support of the Cybersecurity mission |
+
+  Includes pyghidra
   '
 
 base: core22
@@ -18,7 +20,7 @@ architectures:
     build-for: [arm64]
 
 apps:
-  ghidra:
+  no-python:
     command: ghidra/ghidraRun
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
@@ -45,17 +47,17 @@ apps:
     - x11       # still required even for headless operation
     - removable-media
 
-  pyghidra:
+  ghidra:
     command: ghidra/support/pyghidraRun
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
-      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA"
+      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA" -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true
     plugs:
     - desktop
     - home
     - network-bind
-    - x11       # still required even for headless operation
+    - x11
     - removable-media
 
 parts:
