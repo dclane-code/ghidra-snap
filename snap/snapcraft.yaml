@@ -12,6 +12,15 @@ confinement: strict
 grade: stable
 license: Apache-2.0
 icon: snap/gui/ghidra.png
+title: Ghidra
+website:
+  - https://github.com/dclane-code/ghidra-snap/
+source-code: 
+  - https://github.com/dclane-code/ghidra-snap/
+issues:
+  - https://github.com/dclane-code/ghidra-snap/issues
+contact:
+  - https://github.com/dclane-code
 
 architectures:
   - build-on: [amd64]
