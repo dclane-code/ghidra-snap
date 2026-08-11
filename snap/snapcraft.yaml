@@ -34,8 +34,9 @@ apps:
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
-      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA" -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Djava.io.tmpdir="$SNAP_USER_COMMON"/tmp -Dapplication.tempdir="$SNAP_USER_COMMON"/tmp -Dapplication.cachedir="$SNAP_USER_COMMON"/tmp
+      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Djava.io.tmpdir=$SNAP_USER_DATA/tmp -Dapplication.tempdir=$SNAP_USER_DATA/tmp -Dapplication.cachedir=$SNAP_USER_DATA/tmp
       GDK_SCALE: "1"
+      XDG_CONFIG_HOME: $SNAP_USER_DATA/.config
     plugs:
     - desktop
     - home
@@ -49,7 +50,7 @@ apps:
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
-      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA" -Djava.io.tmpdir="$SNAP_USER_COMMON"/tmp -Dapplication.tempdir="$SNAP_USER_COMMON"/tmp -Dapplication.cachedir="$SNAP_USER_COMMON"/tmp
+      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA -Djava.io.tmpdir=$SNAP_USER_DATA/tmp -Dapplication.tempdir=$SNAP_USER_DATA/tmp -Dapplication.cachedir=$SNAP_USER_DATA/tmp
     plugs:
     - desktop
     - home
@@ -63,7 +64,8 @@ apps:
     environment:
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
       PATH: $JAVA_HOME/bin:$PATH
-      _JAVA_OPTIONS: -Duser.home="$SNAP_USER_DATA" -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Djava.io.tmpdir="$SNAP_USER_COMMON"/tmp -Dapplication.tempdir="$SNAP_USER_COMMON"/tmp -Dapplication.cachedir="$SNAP_USER_COMMON"/tmp
+      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Djava.io.tmpdir=$SNAP_USER_DATA/tmp -Dapplication.tempdir=$SNAP_USER_DATA/tmp -Dapplication.cachedir=$SNAP_USER_DATA/tmp
+      XDG_CONFIG_HOME: $SNAP_USER_DATA/.config
     plugs:
     - desktop
     - home
