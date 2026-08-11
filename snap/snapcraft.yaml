@@ -30,6 +30,7 @@ apps:
     plugs:
     - desktop
     - home
+    - network
     - network-bind
     - x11
     - removable-media
@@ -43,6 +44,7 @@ apps:
     plugs:
     - desktop
     - home
+    - network
     - network-bind
     - x11       # still required even for headless operation
     - removable-media
@@ -56,6 +58,7 @@ apps:
     plugs:
     - desktop
     - home
+    - network
     - network-bind
     - x11
     - removable-media
