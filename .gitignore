@@ -12,3 +12,20 @@ stage/
 
 # Source archive packed by `snapcraft cleanbuild` before pushing to the LXD container
 /*_source.tar.bz2
+
+# image-garden(1) generated VM images/state and spread's own resume
+# bookkeeping, left behind by `spread garden:...` runs from the repo root
+/.image-garden/
+/.spread-reuse*.yaml
+/*.qcow2
+/*.run
+/*.seed.iso
+/*.user-data
+/*.meta-data
+/*.lock
+/*.serial.log
+/*.stdout.log
+/*.stderr.log
+/*.qcow2.log
+/efi-code.*.img
+/efi-vars.*.img

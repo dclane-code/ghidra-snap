@@ -1,0 +1,49 @@
+summary: Test Ghidra headless binary analysis and Java GhidraScript execution
+
+prepare: |
+  mkdir -p "$HOME/test_headless/scripts"
+
+  cat << 'EOF' > "$HOME/test_headless/test_bin.c"
+  #include <stdio.h>
+  int main(int argc, char **argv) {
+      printf("Hello from Ghidra headless test: %d\n", argc);
+      return 0;
+  }
+  EOF
+  gcc -O0 "$HOME/test_headless/test_bin.c" -o "$HOME/test_headless/test_bin"
+
+  cat << 'EOF' > "$HOME/test_headless/scripts/TestHeadlessScript.java"
+  import ghidra.app.script.GhidraScript;
+
+  public class TestHeadlessScript extends GhidraScript {
+      @Override
+      public void run() throws Exception {
+          println("GHIDRA_TEST_SCRIPT_SUCCESS: " + currentProgram.getName());
+      }
+  }
+  EOF
+
+execute: |
+  mkdir -p "$HOME/test_headless/project"
+
+  LOG_FILE="/tmp/analyze-headless.log"
+  rm -f "$LOG_FILE"
+
+  ghidra.analyzeHeadless \
+    "$HOME/test_headless/project" \
+    test_proj \
+    -import "$HOME/test_headless/test_bin" \
+    -scriptPath "$HOME/test_headless/scripts" \
+    -postScript TestHeadlessScript.java \
+    -deleteProject \
+    > "$LOG_FILE" 2>&1
+
+  cat "$LOG_FILE"
+
+  grep -q "Analysis succeeded for file:" "$LOG_FILE"
+  grep -q "GHIDRA_TEST_SCRIPT_SUCCESS: test_bin" "$LOG_FILE"
+  grep -q "Import succeeded" "$LOG_FILE"
+
+restore: |
+  rm -rf "$HOME/test_headless"
+  rm -f /tmp/analyze-headless.log

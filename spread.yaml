@@ -1,0 +1,132 @@
+project: ghidra-snap
+
+backends:
+  garden:
+    type: adhoc
+    allocate: |
+      if [ -n "${SPREAD_HOST_PATH-}" ]; then
+        PATH="${SPREAD_HOST_PATH}"
+      fi
+      exec image-garden allocate --spread "$SPREAD_SYSTEM"."$(uname -m)"
+    discard: |
+      if [ -n "${SPREAD_HOST_PATH-}" ]; then
+        PATH="${SPREAD_HOST_PATH}"
+      fi
+      exec image-garden discard "$SPREAD_SYSTEM_ADDRESS"
+    systems:
+      - ubuntu-cloud-18.04:
+          username: ubuntu
+          password: ubuntu
+      - ubuntu-cloud-20.04:
+          username: ubuntu
+          password: ubuntu
+      - ubuntu-cloud-22.04:
+          username: ubuntu
+          password: ubuntu
+      - ubuntu-cloud-24.04:
+          username: ubuntu
+          password: ubuntu
+      - ubuntu-cloud-26.04:
+          username: ubuntu
+          password: ubuntu
+
+      # centos-cloud-8 and rocky-cloud-8 aren't offered any more (both EOL)
+      # - standardised on the 9 stream for both rather than mixing families
+      - centos-cloud-9:
+          username: centos
+          password: centos
+      - rocky-cloud-9:
+          username: rocky
+          password: rocky
+
+      # per install-base share, Debian is the only non-Ubuntu-derived distro
+      # with meaningful usage that isn't already covered above (Mint, Pop,
+      # Zorin etc are all Ubuntu derivatives, closely proxied by testing
+      # real Ubuntu)
+      - debian-cloud-12:
+          username: debian
+          password: debian
+      - debian-cloud-13:
+          username: debian
+          password: debian
+
+path: /spread/ghidra-snap
+
+exclude:
+  - .git
+  - .github
+  - .image-garden
+  - "*.qcow2"
+  - "*.img"
+  - "*.iso"
+  - "*.log"
+  - "*.run"
+  - "*.user-data"
+  - "*.meta-data"
+  - "*.lock"
+
+# make sure we don't get killed during prepare
+kill-timeout: 30m
+
+environment:
+  CHANNEL/latest_stable: latest/stable
+  CHANNEL/latest_candidate: latest/candidate
+  CHANNEL/latest_beta: latest/beta
+  CHANNEL/latest_edge: latest/edge
+  CHANNEL/local: local
+
+suites:
+  tests/:
+    summary: spread tests
+    prepare: |
+      case $SPREAD_SYSTEM in
+        centos-*|rocky-*)
+          # disable SELinux since otherwise snapd can't seem to talk to store
+          # - already done in the image, so this only reboots if that failed
+          if [ "$(getenforce)" != Disabled ]; then
+            sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+            REBOOT
+          fi
+          dnf install -y epel-release
+          dnf upgrade -y
+          dnf install -y selinux-policy selinux-policy-targeted
+          dnf install -y snapd git gcc xorg-x11-server-Xvfb dejavu-sans-fonts
+          systemctl enable --now snapd.socket
+          ln -sf /var/lib/snapd/snap /snap
+          snap wait system seed.loaded
+          ;;
+        ubuntu-*|debian-*)
+          # ensure machine is up to date
+          export DEBIAN_FRONTEND=noninteractive
+          # use apt-get to support older Ubuntu releases
+          apt-get update
+          apt-get -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade -y
+          # use apt-get to support older Ubuntu releases
+          apt-get autoremove --purge -y
+          apt install -y snapd git gcc xvfb fonts-dejavu-core
+          ;;
+        *)
+          echo "ERROR: Unsupported system: $SPREAD_SYSTEM"
+          exit 1
+          ;;
+      esac
+
+    prepare-each: |
+      if [ "$CHANNEL" = local ]; then
+        ARCH=$(dpkg --print-architecture 2>/dev/null || uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+        snap install --dangerous "$SPREAD_PATH"/ghidra_*"_${ARCH}".snap
+      else
+        n=0
+        until snap install --channel "$CHANNEL" ghidra; do
+          n=$((n + 1))
+          if [ $n -ge 3 ]; then
+            exit 1
+          fi
+          sleep 10
+        done
+      fi
+
+    restore-each: |
+      pkill -9 -f "ghidra" || true
+      snap remove --purge ghidra || true
+      rm -rf ~/snap/ghidra
