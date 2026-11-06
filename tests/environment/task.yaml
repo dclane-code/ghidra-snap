@@ -1,0 +1,41 @@
+summary: Test snap confinement, desktop metadata, launcher sanitization, and user cache paths
+
+execute: |
+  echo "--- Testing snap confinement ---"
+  # Ghidra snap must be strictly confined (not classic)
+  SNAP_INFO=$(snap list ghidra)
+  echo "$SNAP_INFO"
+  if echo "$SNAP_INFO" | grep -qw "classic"; then
+    echo "ERROR: ghidra snap is unexpectedly marked as classic"
+    exit 1
+  fi
+
+  echo "--- Testing desktop metadata ---"
+  DESKTOP_FILE="/snap/ghidra/current/meta/gui/ghidra.desktop"
+  if [ ! -f "$DESKTOP_FILE" ]; then
+    DESKTOP_FILE="/var/lib/snapd/desktop/applications/ghidra_ghidra.desktop"
+  fi
+  test -f "$DESKTOP_FILE"
+  grep -q "^Exec=ghidra" "$DESKTOP_FILE"
+  grep -q "^Icon=" "$DESKTOP_FILE"
+
+  echo "--- Testing launcher.sh environment sanitization ---"
+  # launcher.sh must unset XDG_CONFIG_HOME and PYTHONPATH so host settings don't pollute the snap
+  TAINT_CONFIG="/tmp/taint_ghidra_config"
+  TAINT_PYTHON="/tmp/taint_python_path"
+  mkdir -p "$TAINT_CONFIG" "$TAINT_PYTHON"
+
+  # ghidra.analyzeHeadless exits with code 1 when showing usage/help
+  XDG_CONFIG_HOME="$TAINT_CONFIG" PYTHONPATH="$TAINT_PYTHON" ghidra.analyzeHeadless -help > /dev/null 2>&1 || true
+
+  # Verify nothing was created in the tainted XDG_CONFIG_HOME
+  if [ -d "$TAINT_CONFIG/ghidra" ]; then
+    echo "ERROR: ghidra wrote configuration into tainted XDG_CONFIG_HOME"
+    exit 1
+  fi
+
+  # Verify snap user directories were created under ~/snap/ghidra/
+  test -d "$HOME/snap/ghidra"
+
+restore: |
+  rm -rf /tmp/taint_ghidra_config /tmp/taint_python_path

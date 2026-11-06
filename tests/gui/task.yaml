@@ -1,0 +1,116 @@
+summary: Test Ghidra GUI startup and initialization under virtual X11 server
+
+environment:
+  DISPLAY: :99
+
+prepare: |
+  # Ensure clean process state
+  pkill -9 -f "ghidra" || true
+  pkill -9 -x Xvfb || true
+  rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 /tmp/xvfb.log /tmp/ghidra-gui.log
+
+  # Pre-accept User Agreement so Ghidra GUI starts non-interactively without modal prompt
+  # Run analyzeHeadless once to ensure ~/snap/ghidra directories are created by snapd
+  ghidra.analyzeHeadless -help > /dev/null 2>&1 || true
+
+  GHIDRA_VER=$(snap list ghidra | awk 'NR==2 {print $2}')
+  for conf_dir in "$HOME"/snap/ghidra/*; do
+    if [ -d "$conf_dir" ] && [ "$(basename "$conf_dir")" != "common" ]; then
+      pref_dir="$conf_dir/.config/ghidra/ghidra_${GHIDRA_VER}_PUBLIC"
+      mkdir -p "$pref_dir"
+      printf "USER_AGREEMENT=ACCEPT\nSHOW_TIPS=false\nGhidraShowWhatsNew=false\n" > "$pref_dir/preferences"
+    fi
+  done
+
+  Xvfb :99 -screen 0 1024x768x24 > /tmp/xvfb.log 2>&1 &
+  for i in $(seq 1 50); do
+    [ -S /tmp/.X11-unix/X99 ] && break
+    sleep 0.1
+  done
+
+  if [ ! -S /tmp/.X11-unix/X99 ]; then
+    echo "ERROR: Xvfb failed to start within timeout"
+    cat /tmp/xvfb.log
+    exit 1
+  fi
+
+restore: |
+  pkill -9 -f "ghidra" || true
+  pkill -9 -x Xvfb || true
+  rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 /tmp/xvfb.log /tmp/ghidra-gui.log
+
+execute: |
+  # Ensure Xvfb is running
+  if [ ! -S /tmp/.X11-unix/X99 ]; then
+    Xvfb :99 -screen 0 1024x768x24 > /tmp/xvfb.log 2>&1 &
+    for i in $(seq 1 50); do
+      [ -S /tmp/.X11-unix/X99 ] && break
+      sleep 0.1
+    done
+  fi
+
+  echo "--- Testing ghidra.no-python GUI startup ---"
+  # Clear existing application log if any
+  rm -f "$HOME"/snap/ghidra/*/.config/ghidra/*/application.log
+
+  ghidra.no-python
+
+  SUCCESS=0
+  for i in $(seq 1 60); do
+    LOG_FILE=$(ls -1t "$HOME"/snap/ghidra/*/.config/ghidra/*/application.log 2>/dev/null | head -n 1 || true)
+    if [ -n "$LOG_FILE" ] && [ -f "$LOG_FILE" ]; then
+      if grep -q "Ghidra startup complete" "$LOG_FILE"; then
+        echo "SUCCESS: ghidra.no-python GUI startup verified"
+        SUCCESS=1
+        break
+      fi
+    fi
+    sleep 0.5
+  done
+
+  pkill -9 -f "ghidra" || true
+  sleep 1
+
+  if [ "$SUCCESS" -ne 1 ]; then
+    echo "ERROR: ghidra.no-python failed to complete startup within timeout"
+    if [ -n "$LOG_FILE" ] && [ -f "$LOG_FILE" ]; then
+      cat "$LOG_FILE"
+    fi
+    exit 1
+  fi
+
+  echo "--- Testing ghidra (pyghidra) GUI startup ---"
+  # Clear application log again
+  rm -f "$HOME"/snap/ghidra/*/.config/ghidra/*/application.log
+  rm -f /tmp/ghidra-gui.log
+
+  timeout 45 ghidra --console > /tmp/ghidra-gui.log 2>&1 &
+  GHIDRA_PID=$!
+
+  SUCCESS=0
+  for i in $(seq 1 60); do
+    LOG_FILE=$(ls -1t "$HOME"/snap/ghidra/*/.config/ghidra/*/application.log 2>/dev/null | head -n 1 || true)
+    if { [ -n "$LOG_FILE" ] && [ -f "$LOG_FILE" ] && grep -q "Ghidra startup complete" "$LOG_FILE"; } || \
+       { [ -f /tmp/ghidra-gui.log ] && grep -q "Ghidra startup complete" /tmp/ghidra-gui.log; }; then
+      echo "SUCCESS: ghidra pyghidra GUI startup verified"
+      SUCCESS=1
+      break
+    fi
+    sleep 0.5
+  done
+
+  kill -9 "$GHIDRA_PID" 2>/dev/null || true
+  pkill -9 -f "ghidra" || true
+
+  if [ "$SUCCESS" -ne 1 ]; then
+    echo "ERROR: ghidra pyghidra failed to complete startup within timeout"
+    if [ -n "$LOG_FILE" ] && [ -f "$LOG_FILE" ]; then
+      echo "=== application.log ==="
+      cat "$LOG_FILE"
+    fi
+    if [ -f /tmp/ghidra-gui.log ]; then
+      echo "=== console output ==="
+      cat /tmp/ghidra-gui.log
+    fi
+    exit 1
+  fi

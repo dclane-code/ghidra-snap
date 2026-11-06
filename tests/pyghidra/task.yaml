@@ -1,0 +1,46 @@
+summary: Test PyGhidra Python integration and headless script execution
+
+prepare: |
+  mkdir -p "$HOME/test_pyghidra/scripts"
+
+  cat << 'EOF' > "$HOME/test_pyghidra/test_bin.c"
+  #include <stdio.h>
+  int main(int argc, char **argv) {
+      printf("Hello from PyGhidra test: %d\n", argc);
+      return 0;
+  }
+  EOF
+  gcc -O0 "$HOME/test_pyghidra/test_bin.c" -o "$HOME/test_pyghidra/test_bin"
+
+  cat << 'EOF' > "$HOME/test_pyghidra/scripts/test_script.py"
+  import sys
+  import pyghidra
+
+  prog_name = currentProgram.getName()
+  print(f"PYGHIDRA_TEST_SUCCESS: {prog_name}")
+  EOF
+
+execute: |
+  mkdir -p "$HOME/test_pyghidra/project"
+
+  LOG_FILE="/tmp/pyghidra.log"
+  rm -f "$LOG_FILE"
+
+  ghidra -H \
+    "$HOME/test_pyghidra/project" \
+    test_proj \
+    -import "$HOME/test_pyghidra/test_bin" \
+    -scriptPath "$HOME/test_pyghidra/scripts" \
+    -postScript test_script.py \
+    -deleteProject \
+    > "$LOG_FILE" 2>&1
+
+  cat "$LOG_FILE"
+
+  grep -q "PYGHIDRA_TEST_SUCCESS: test_bin" "$LOG_FILE"
+  grep -q "Using active virtual environment:" "$LOG_FILE"
+  grep -q "Import succeeded" "$LOG_FILE"
+
+restore: |
+  rm -rf "$HOME/test_pyghidra"
+  rm -f /tmp/pyghidra.log

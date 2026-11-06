@@ -1,5 +1,5 @@
 name: ghidra
-version: '12.1.2'
+version: '12.2'
 summary: Ghidra SRE tools
 description: 'A software reverse engineering (SRE) suite of tools developed by NSA''s
   Research Directorate in support of the Cybersecurity mission |
@@ -7,7 +7,7 @@ description: 'A software reverse engineering (SRE) suite of tools developed by N
   Includes pyghidra
   '
 
-base: core22
+base: core26
 confinement: strict
 grade: stable
 license: Apache-2.0
@@ -22,36 +22,34 @@ issues:
 contact:
   - https://github.com/dclane-code
 
-architectures:
-  - build-on: [amd64]
-    build-for: [amd64]
-  - build-on: [arm64]
-    build-for: [arm64]
+platforms:
+  amd64:
+  arm64:
 
 apps:
   no-python:
     command: ghidra/ghidraRun
     command-chain:
-     - ./launcher.sh
+     - launcher.sh
+    extensions: [gnome]
     environment:
-      JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-25-openjdk-$CRAFT_ARCH_BUILD_FOR
       PATH: $JAVA_HOME/bin:$PATH
+      # don't inherit the pixbuf loader cache of another snap (e.g. when launched from a snapped terminal)
+      GDK_PIXBUF_MODULE_FILE: $SNAP_USER_COMMON/.cache/gdk-pixbuf-loaders.cache
       _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Djava.io.tmpdir=$SNAP_USER_DATA/tmp -Dapplication.tempdir=$SNAP_USER_DATA/tmp -Dapplication.cachedir=$SNAP_USER_DATA/tmp
-      GDK_SCALE: "1"
     plugs:
-    - desktop
     - home
     - network
     - network-bind
-    - x11
     - removable-media
 
   analyzeHeadless:
     command: ghidra/support/analyzeHeadless
     command-chain:
-     - ./launcher.sh
+     - launcher.sh
     environment:
-      JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-25-openjdk-$CRAFT_ARCH_BUILD_FOR
       PATH: $JAVA_HOME/bin:$PATH
       _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA -Djava.io.tmpdir=$SNAP_USER_DATA/tmp -Dapplication.tempdir=$SNAP_USER_DATA/tmp -Dapplication.cachedir=$SNAP_USER_DATA/tmp
     plugs:
@@ -65,40 +63,40 @@ apps:
   ghidra:
     command: ghidra/support/pyghidraRun
     command-chain:
-     - ./launcher.sh
+     - launcher.sh
+    extensions: [gnome]
     environment:
-      JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH
-      PATH: $JAVA_HOME/bin:$PATH
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-25-openjdk-$CRAFT_ARCH_BUILD_FOR
+      # $SNAP/bin/python3 is the venv containing pyghidra, which pyghidraRun uses when active
+      PATH: $JAVA_HOME/bin:$SNAP/bin:$PATH
+      # don't inherit the pixbuf loader cache of another snap (e.g. when launched from a snapped terminal)
+      GDK_PIXBUF_MODULE_FILE: $SNAP_USER_COMMON/.cache/gdk-pixbuf-loaders.cache
       _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Djava.io.tmpdir=$SNAP_USER_DATA/tmp -Dapplication.tempdir=$SNAP_USER_DATA/tmp -Dapplication.cachedir=$SNAP_USER_DATA/tmp
     plugs:
-    - desktop
     - home
     - network
     - network-bind
-    - x11
     - removable-media
 
 parts:
   ghidra:
     plugin: dump
-    source: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.2_build/ghidra_12.1.2_PUBLIC_20260605.zip
+    source: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.2_build/ghidra_12.2_PUBLIC_20261016.zip
     build-packages:
-    - openjdk-21-jdk
+    - openjdk-25-jdk
     - ca-certificates-java
     - ca-certificates
     stage-packages:
-    - openjdk-21-jdk
+    - openjdk-25-jdk
     - ca-certificates-java
     - ca-certificates
     organize:
-      ghidra_12.1.2_PUBLIC: ghidra
+      ghidra_12.2_PUBLIC: ghidra
     prime:
-      - -usr/lib/jvm/java-11-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/blacklisted.certs 
-      - -usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/blacklisted.certs
-      - -usr/lib/jvm/java-11-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/cacerts
-      - -usr/lib/jvm/java-21-openjdk-$SNAPCRAFT_TARGET_ARCH/lib/security/cacerts
+      - -usr/lib/jvm/java-25-openjdk-$CRAFT_ARCH_BUILD_FOR/lib/security/blacklisted.certs
+      - -usr/lib/jvm/java-25-openjdk-$CRAFT_ARCH_BUILD_FOR/lib/security/cacerts
 
-  cmd-chain:
+  launcher:
     after: [pyghidra]
     plugin: dump
     source: .
@@ -108,10 +106,13 @@ parts:
     plugin: python
     source: .
     build-environment:
+     # the gnome extension adds the SDK's dist-packages to PYTHONPATH, which makes pip
+     # think deps like packaging are already satisfied and leave them out of the venv
+     - PYTHONPATH: ""
      - PIP_NO_INDEx: "true"
      - PIP_FIND_LINKS: "$CRAFT_STAGE/ghidra/Ghidra/Features/PyGhidra/pypkg/dist"
+    stage-packages:
+      - python3-minimal
+      - python3-venv
     python-packages:
      - pyghidra
-    stage-packages:
-    - openjdk-21-jdk
-    
